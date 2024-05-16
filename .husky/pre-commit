@@ -2,4 +2,6 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # pnpm validate
+
+# we are only checking ts,tsx,js,json for that we installed this below dep, and created file called lint-staged.config.js
 pnpm lint-staged
