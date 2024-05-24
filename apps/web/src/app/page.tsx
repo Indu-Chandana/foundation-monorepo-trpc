@@ -1,5 +1,12 @@
-import Image from 'next/image'
+// import { trpc } from '@foundation-trpc/trpc-client/src'
 
-export default function Home() {
-  return <main>Hello</main>
+export default async function Home() {
+  // const users = await trpc.auth.users.query()
+
+  return (
+    <main>
+      Hello
+      {/* {JSON.stringify(users)} */}
+    </main>
+  )
 }
