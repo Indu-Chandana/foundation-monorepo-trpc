@@ -13,11 +13,11 @@ export const Provider = ({ children }: { children: React.ReactNode }) => {
       links: [
         httpBatchLink({
           url: 'http://localhost:8080/trpc',
-          // async headers() {
-          //     return {
-          //         authorization: '12345'
-          //     }
-          // }
+          async headers() {
+            return {
+              authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJJbmR1In0.5n9nSquiv0a1HCA9ST65AbFlr3VdPs64TbJl5QHq6vU`,
+            }
+          },
         }),
       ],
     }),
