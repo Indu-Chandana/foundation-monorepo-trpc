@@ -2,9 +2,11 @@ import { TRPCError } from '@trpc/server'
 import { t } from './trpc'
 // import { Role } from "./types";
 import { JwtPayload, verify } from 'jsonwebtoken'
+import { Role } from './types'
+import { authorizeUser } from './util'
 
 // first: authentication part
-export const isAuthed = () =>
+export const isAuthed = (...roles: Role[]) =>
   //...roles: Role[]
   t.middleware(async (opts) => {
     const { token } = opts.ctx
@@ -31,5 +33,8 @@ export const isAuthed = () =>
         message: 'Invalid token',
       })
     }
+
+    await authorizeUser(uid, roles)
+
     return opts.next({ ...opts, ctx: { ...opts.ctx, uid } })
   })
