@@ -12,9 +12,23 @@
 'use client'
 
 import { trpcClient } from '@foundation-trpc/trpc-client/src/client'
+import { signOut, useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 export default function Home() {
   const { isLoading, data } = trpcClient.auth.users.useQuery()
+  const { data: userData } = useSession()
 
-  return <main>Hello {JSON.stringify(data)}</main>
+  return (
+    <main>
+      Hello {JSON.stringify(data)}
+      <div>
+        {userData?.user ? (
+          <button onClick={() => signOut()}>signOut</button>
+        ) : (
+          <Link href="/signIn">Sign In</Link>
+        )}
+      </div>
+    </main>
+  )
 }
