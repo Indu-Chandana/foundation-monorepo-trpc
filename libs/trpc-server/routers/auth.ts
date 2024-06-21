@@ -5,7 +5,12 @@ import { isAuthed } from '../middleware'
 import { privateProcedure, publicProcedure, router, t } from '../trpc'
 
 import { prisma } from '@foundation-trpc/db'
-import { formSchemaRegister } from '@foundation-trpc/forms/src/schemas'
+import {
+  formSchemaRegister,
+  formSchemaSignIn,
+  formSchemaUser,
+  zodSchemaRegisterWithProvider,
+} from '@foundation-trpc/forms/src/schemas'
 import { AuthProviderType } from '@foundation-trpc/db/types'
 import { sign } from 'jsonwebtoken'
 
@@ -16,6 +21,36 @@ export const authRoutes = router({
   // users: t.procedure.use(isAuthed('manager')).query(({ctx}) => {
   //   return prisma.user.findMany()
   // }),
+
+  user: publicProcedure.input(formSchemaUser).query(({ ctx, input }) => {
+    return prisma.user.findMany({ where: { uid: input.uid } })
+  }),
+
+  signIn: publicProcedure
+    .input(formSchemaSignIn)
+    .mutation(async ({ ctx, input: { email, password } }) => {
+      const credentials = await prisma.credentials.findUnique({
+        where: { email },
+        include: { user: true },
+      })
+      if (!credentials) {
+        throw new Error('Invalid email or password')
+      }
+
+      if (!bcrypt.compareSync(password, credentials?.passwordHash)) {
+        throw new Error('Invalid email or password')
+      }
+
+      const token = sign(
+        { uid: credentials.uid },
+        process.env.NEXTAUTH_SECRET || '',
+      )
+
+      return {
+        user: credentials.user,
+        token,
+      }
+    }),
 
   registerWithCredentials: publicProcedure
     .input(formSchemaRegister)
@@ -47,6 +82,27 @@ export const authRoutes = router({
 
       const token = sign({ uid: user.uid }, process.env.NEXTAUTH_SECRET!)
 
+      return { user, token }
+    }),
+
+  registerWithProvider: publicProcedure
+    .input(zodSchemaRegisterWithProvider)
+    .mutation(async ({ ctx, input }) => {
+      const { type, uid, image, name } = input
+      const user = await prisma.user.create({
+        data: {
+          uid,
+          image,
+          name,
+          AuthProvider: {
+            create: {
+              type,
+            },
+          },
+        },
+      })
+
+      const token = sign({ uid: user.uid }, process.env.NEXTAUTH_SECRET!)
       return { user, token }
     }),
 })
