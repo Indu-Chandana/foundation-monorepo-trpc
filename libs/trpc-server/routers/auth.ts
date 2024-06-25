@@ -1,8 +1,13 @@
 import { TRPCError } from '@trpc/server'
 import * as bcrypt from 'bcryptjs'
 import { v4 as uuid } from 'uuid'
-import { isAuthed } from '../middleware'
-import { privateProcedure, publicProcedure, router, t } from '../trpc'
+// import { isAuthed } from '../middleware'
+import {
+  privateProcedure,
+  publicProcedure,
+  router,
+  //  t
+} from '../trpc'
 
 import { prisma } from '@foundation-trpc/db'
 import {
@@ -15,20 +20,33 @@ import { AuthProviderType } from '@foundation-trpc/db/types'
 import { sign } from 'jsonwebtoken'
 
 export const authRoutes = router({
-  users: privateProcedure.query(({ ctx }) => prisma.user.findMany()),
+  users: privateProcedure.query(
+    (
+      {
+        // ctx
+      },
+    ) => prisma.user.findMany(),
+  ),
 
   // we can also create directly like this,
   // users: t.procedure.use(isAuthed('manager')).query(({ctx}) => {
   //   return prisma.user.findMany()
   // }),
 
-  user: publicProcedure.input(formSchemaUser).query(({ ctx, input }) => {
-    return prisma.user.findMany({ where: { uid: input.uid } })
-  }),
+  user: publicProcedure.input(formSchemaUser).query(
+    ({
+      // ctx,
+      input,
+    }) => {
+      return prisma.user.findMany({ where: { uid: input.uid } })
+    },
+  ),
 
-  signIn: publicProcedure
-    .input(formSchemaSignIn)
-    .mutation(async ({ ctx, input: { email, password } }) => {
+  signIn: publicProcedure.input(formSchemaSignIn).mutation(
+    async ({
+      // ctx,
+      input: { email, password },
+    }) => {
       const credentials = await prisma.credentials.findUnique({
         where: { email },
         include: { user: true },
@@ -50,11 +68,14 @@ export const authRoutes = router({
         user: credentials.user,
         token,
       }
-    }),
+    },
+  ),
 
-  registerWithCredentials: publicProcedure
-    .input(formSchemaRegister)
-    .mutation(async ({ ctx, input: { email, password, image, name } }) => {
+  registerWithCredentials: publicProcedure.input(formSchemaRegister).mutation(
+    async ({
+      // ctx,
+      input: { email, password, image, name },
+    }) => {
       const existingUser = await prisma.credentials.findUnique({
         where: { email: email },
       })
@@ -83,26 +104,32 @@ export const authRoutes = router({
       const token = sign({ uid: user.uid }, process.env.NEXTAUTH_SECRET!)
 
       return { user, token }
-    }),
+    },
+  ),
 
   registerWithProvider: publicProcedure
     .input(zodSchemaRegisterWithProvider)
-    .mutation(async ({ ctx, input }) => {
-      const { type, uid, image, name } = input
-      const user = await prisma.user.create({
-        data: {
-          uid,
-          image,
-          name,
-          AuthProvider: {
-            create: {
-              type,
+    .mutation(
+      async ({
+        // ctx,
+        input,
+      }) => {
+        const { type, uid, image, name } = input
+        const user = await prisma.user.create({
+          data: {
+            uid,
+            image,
+            name,
+            AuthProvider: {
+              create: {
+                type,
+              },
             },
           },
-        },
-      })
+        })
 
-      const token = sign({ uid: user.uid }, process.env.NEXTAUTH_SECRET!)
-      return { user, token }
-    }),
+        const token = sign({ uid: user.uid }, process.env.NEXTAUTH_SECRET!)
+        return { user, token }
+      },
+    ),
 })
