@@ -14,6 +14,7 @@
 import { trpcClient } from '@foundation-trpc/trpc-client/src/client'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { HomePage } from '@foundation-trpc/ui/src/components/templates/HomePage'
 
 export default function Home() {
   const { isLoading, data } = trpcClient.auth.users.useQuery()
@@ -21,14 +22,17 @@ export default function Home() {
 
   return (
     <main>
-      Hello {JSON.stringify(data)}
-      <div>
+      {/* Hello {JSON.stringify(data)} */}
+
+      {/* <div>
         {userData?.user ? (
           <button onClick={() => signOut()}>signOut</button>
         ) : (
           <Link href="/signIn">Sign In</Link>
         )}
-      </div>
+      </div> */}
+
+      <HomePage />
     </main>
   )
 }
