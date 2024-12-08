@@ -19,6 +19,14 @@ import {
 import { AuthProviderType } from '@foundation-trpc/db/types'
 import { sign } from 'jsonwebtoken'
 
+// 'http://localhost:8080/trpc/auth.registerWithCredentials'
+// 'http://localhost:8080/trpc/auth.users'
+
+// {
+//   "email":"e@gmail.com",
+//   "password": "1234567"
+// }
+
 export const authRoutes = router({
   users: privateProcedure.query(
     (
@@ -33,6 +41,8 @@ export const authRoutes = router({
   //   return prisma.user.findMany()
   // }),
 
+  // if u use in postman - u need to change .query to .mutation() and send with POST method.
+  // normal code it is working. (eg: authOptions.ts)
   user: publicProcedure.input(formSchemaUser).query(
     ({
       // ctx,
